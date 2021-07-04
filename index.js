@@ -13,15 +13,14 @@ client.on("message", (msg) => {
     if (trimmedMsg[0] != ">") return;
 
     const fmtMsg = trimmedMsg.slice(1, trimmedMsg.length);
-    // if (fmtMsg.includes("rm")) msg.channel.send("`rm` is not allowed!");
     childProcess.exec(fmtMsg, (error, stdout, stderr) => {
-        let output;
+        let output = "";
 
         if (error) output = error;
         else if (stderr) output = stderr;
         else if (stdout) output = stdout;
 
-        if (output) output = `\`${output}\``;
+        if (output != "") output = `\`${output}\``;
 
         msg.channel.send(`Result of \`${fmtMsg}\`:\n${output}`);
     });
