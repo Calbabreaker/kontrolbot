@@ -16,3 +16,9 @@ dependencies and `yarn start` to start it.
 
 A better way is to run inside a docker container with `docker run --env-file
 .env --rm -it -t calbabreaker/kontrolbot` .
+
+## Usage
+
+Type a message with `>` at the front and it will execute the message and echo
+back the result.  Note that it has to finish the command in order for it to
+echo back.

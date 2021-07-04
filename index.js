@@ -20,7 +20,7 @@ client.on("message", (msg) => {
         else if (stderr) output = stderr;
         else if (stdout) output = stdout;
 
-        if (output != "") output = `\`${output}\``;
+        if (output != "") output = "```" + output + "```";
 
         msg.channel.send(`Result of \`${fmtMsg}\`:\n${output}`);
     });
