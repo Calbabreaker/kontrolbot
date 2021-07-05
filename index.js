@@ -1,8 +1,14 @@
-require("dotenv").config();
 const childProcess = require("child_process");
 const Discord = require("discord.js");
 const client = new Discord.Client();
-client.login(process.env.BOT_TOKEN);
+
+if (process.env.BOT_TOKEN) {
+    client.login(process.env.BOT_TOKEN);
+    process.env.BOT_TOKEN = "";
+} else {
+    client.login(process.argv[2]);
+    process.argv[2] = "";
+}
 
 const botCommandDeliminator = "!kontrolbot";
 
@@ -28,7 +34,7 @@ let smbInterval;
 function doShellCommand(channel, shellCommand) {
     if (subProcess != null) {
         channel.send(
-            `Process \`${subProcess.command}\` is already running! \nType !kontrolbot kill to kill it.`
+            `Process \`${subProcess.command}\` is already running! Type !kontrolbot kill to kill it.`
         );
         return;
     }
