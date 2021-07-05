@@ -14,14 +14,21 @@ client.on("message", (msg) => {
 
     const fmtMsg = trimmedMsg.slice(1, trimmedMsg.length);
     childProcess.exec(fmtMsg, (error, stdout, stderr) => {
-        let output = "";
+        let output;
 
         if (error) output = error;
         else if (stderr) output = stderr;
         else if (stdout) output = stdout;
 
-        if (output != "") output = "```" + output + "```";
+        let replyOutput = "";
+        if (output) {
+            output = output.toString();
+            replyOutput = output.replace(/```/g, "`‌``");
+            replyOutput = "```" + replyOutput + "```";
+        }
 
-        msg.channel.send(`Result of \`${fmtMsg}\`:\n${output}`);
+        const replyMsg = `Result of \`${fmtMsg}\`:\n${replyOutput}`;
+        msg.channel.send(replyMsg);
+        console.log(`\nResult of ${fmtMsg}:\n${output}`);
     });
 });
