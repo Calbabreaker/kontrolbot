@@ -4,31 +4,94 @@ const Discord = require("discord.js");
 const client = new Discord.Client();
 client.login(process.env.BOT_TOKEN);
 
+const botCommandDeliminator = "!kontrolbot";
+
 client.on("ready", () => {
     console.log("Bot running!");
 });
 
-client.on("message", (msg) => {
-    const trimmedMsg = msg.content.trim();
-    if (trimmedMsg[0] != ">") return;
-
-    const fmtMsg = trimmedMsg.slice(1, trimmedMsg.length);
-    childProcess.exec(fmtMsg, (error, stdout, stderr) => {
-        let output;
-
-        if (error) output = error;
-        else if (stderr) output = stderr;
-        else if (stdout) output = stdout;
-
-        let replyOutput = "";
-        if (output) {
-            output = output.toString();
-            replyOutput = output.replace(/```/g, "`‌``");
-            replyOutput = "```" + replyOutput + "```";
-        }
-
-        const replyMsg = `Result of \`${fmtMsg}\`:\n${replyOutput}`;
-        msg.channel.send(replyMsg);
-        console.log(`\nResult of ${fmtMsg}:\n${output}`);
-    });
+client.on("message", (messageObj) => {
+    const trimmedMessage = messageObj.content.trim();
+    if (trimmedMessage[0] === ">") {
+        doShellCommand(messageObj.channel, trimmedMessage.slice(1, trimmedMessage.length));
+    } else if (trimmedMessage.startsWith(botCommandDeliminator)) {
+        doBotCommand(
+            messageObj.channel,
+            trimmedMessage.slice(botCommandDeliminator.length, trimmedMessage.length).trim()
+        );
+    }
 });
+
+let subProcess;
+let smbInterval;
+
+function doShellCommand(channel, shellCommand) {
+    if (subProcess != null) {
+        channel.send(
+            `Process \`${subProcess.command}\` is already running! \nType !kontrolbot kill to kill it.`
+        );
+        return;
+    }
+
+    subProcess = childProcess.spawn(shellCommand, { shell: true });
+    subProcess.command = shellCommand;
+    channel.send(`Running \`${subProcess.command}\`...`);
+
+    subProcess.stdout.on("data", (data) => {
+        queueMessage(data.toString());
+    });
+
+    subProcess.stderr.on("data", (data) => {
+        queueMessage(data.toString());
+    });
+
+    clearInterval(smbInterval);
+    smbInterval = setInterval(() => {
+        sendMessageBuffer(channel);
+    }, 500);
+
+    subProcess.on("exit", () => {
+        subProcess = null;
+    });
+}
+
+// bot commands begin with !kontrolbot
+function doBotCommand(channel, botCommand) {
+    switch (botCommand) {
+        case "kill":
+            if (subProcess != null) {
+                channel.send(`Killed \`${subProcess.command}\``);
+                subProcess.kill();
+            } else {
+                channel.send(`No process is running!`);
+            }
+            break;
+        default:
+            channel.send(`Invalid kontrol bot command: \`${botCommand}\``);
+            break;
+    }
+}
+
+const messageLimit = 2000;
+let messageBuffer = "";
+
+function queueMessage(message) {
+    messageBuffer += message;
+}
+
+function sendMessageBuffer(channel) {
+    let messageToSend = messageBuffer;
+    if (messageBuffer.length > messageLimit) {
+        let nextLineBreakI = messageBuffer.lastIndexOf("\n");
+        if (nextLineBreakI === -1) nextLineBreakI = messageLimit;
+        messageToSend = messageBuffer.slice(0, Math.min(messageLimit, nextLineBreakI));
+    }
+
+    if (messageToSend.trim() === "") {
+        if (subProcess == null) clearInterval(smbInterval);
+        return;
+    }
+
+    channel.send(messageToSend);
+    messageBuffer = messageBuffer.slice(messageToSend.length - 1, messageBuffer.length);
+}

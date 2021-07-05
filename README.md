@@ -15,10 +15,12 @@ You can run it directly on your computer by running `yarn install` to install
 dependencies and `yarn start` to start it.
 
 A better way is to run inside a docker container with `docker run --env-file
-.env --rm -it -t calbabreaker/kontrolbot` .
+.env --rm -it -t calbabreaker/kontrolbot`. You can build a docker image with
+`docker build .` and run it with the same docker run command but with the
+calbabreaker/kontrolbot replaced with the image tag.
 
 ## Usage
 
 Type a message with `>` at the front and it will execute the message and echo
-back the result.  Note that it has to finish the command in order for it to
-echo back.
+back the result. Commands will continuously send back their output until it
+finishes.
