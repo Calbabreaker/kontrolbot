@@ -45,7 +45,7 @@ function doShellCommand(channel, shellCommand) {
         queueMessage(data.toString());
     });
 
-    clearInterval(smbInterval);
+    clearMessageBuffer();
     smbInterval = setInterval(() => {
         sendMessageBuffer(channel);
     }, 500);
@@ -62,6 +62,7 @@ function doBotCommand(channel, botCommand) {
             if (subProcess != null) {
                 channel.send(`Killed \`${subProcess.command}\``);
                 subProcess.kill();
+                clearMessageBuffer();
             } else {
                 channel.send(`No process is running!`);
             }
@@ -82,16 +83,21 @@ function queueMessage(message) {
 function sendMessageBuffer(channel) {
     let messageToSend = messageBuffer;
     if (messageBuffer.length > messageLimit) {
-        let nextLineBreakI = messageBuffer.lastIndexOf("\n");
-        if (nextLineBreakI === -1) nextLineBreakI = messageLimit;
-        messageToSend = messageBuffer.slice(0, Math.min(messageLimit, nextLineBreakI));
+        messageToSend = messageBuffer.slice(0, messageLimit);
+        let nextLineBreakI = messageToSend.lastIndexOf("\n");
+        if (nextLineBreakI !== -1) messageToSend = messageToSend.slice(0, nextLineBreakI + 1);
     }
 
     if (messageToSend.trim() === "") {
-        if (subProcess == null) clearInterval(smbInterval);
+        if (subProcess == null) clearMessageBuffer();
         return;
     }
 
     channel.send(messageToSend);
     messageBuffer = messageBuffer.slice(messageToSend.length - 1, messageBuffer.length);
+}
+
+function clearMessageBuffer() {
+    clearInterval(smbInterval);
+    messageBuffer = "";
 }
