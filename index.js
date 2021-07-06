@@ -1,3 +1,5 @@
+"use strict";
+
 const botCommandDelm = "!kb";
 const messageLimit = 2000;
 
@@ -19,6 +21,8 @@ if (process.env.OWNERS) {
         owners[name] = true;
         allowedUsers[name] = true;
     });
+} else {
+    allowAll = true;
 }
 
 client.on("ready", () => {
@@ -48,15 +52,15 @@ let smbInterval;
 
 function doShellCommand(channel, shellCommand) {
     if (subProcess != null) {
-        channel.send(
-            `Process \`${subProcess.command}\` is already running! ` +
-                `Type ${botCommandDelm} kill to kill it.`
-        );
-
+        subProcess.stdin.write(shellCommand + "\n");
         return;
     }
 
-    subProcess = childProcess.spawn(shellCommand, { shell: true });
+    subProcess = childProcess.spawn(shellCommand, {
+        shell: true,
+        windowsHide: true,
+    });
+
     subProcess.command = shellCommand;
     channel.send(`Running \`${subProcess.command}\`...`);
 
@@ -84,7 +88,7 @@ function doBotCommand(message, botCommand) {
     switch (args[0]) {
         case "kill":
             if (subProcess != null) {
-                message.channel.send(`Killed \`${subProcess.command}\``);
+                message.channel.send(`Killed \`${subProcess.command}\`.`);
                 subProcess.kill();
                 clearMessageBuffer();
             } else {
