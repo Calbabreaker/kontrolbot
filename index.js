@@ -108,29 +108,35 @@ function doBotCommand(message, botCommand) {
                 message.channel.send(`Made ${args[1]} allowed to use kontrol bot.`);
                 allowedUsers[args[1]] = true;
             } else {
-                message.channel.send(`${args[1]} was already able to use kontrol bot!`);
+                message.channel.send(`${args[1]} was already allowed to use kontrol bot!`);
             }
             break;
         case "disallow":
             if (!checkOwner(message)) break;
 
             if (args[1] == "*") {
-                message.channel.send(`Made everyone unable to use kontrol bot.`);
+                message.channel.send(`Made all non owners disallowed from using kontrol bot.`);
                 resetAllowedUsers();
                 break;
             }
 
             if (allowAll) {
                 message.channel.send(
-                    `Cannot disallow a person if everyone is allowed. Use * to disallow everyone first.`
+                    `Cannot disallow someone if everyone is allowed! Use * to disallow everyone.`
                 );
+                break;
             }
 
             if (allowedUsers[args[1]]) {
-                message.channel.send(`Made ${args[1]} unable to use kontrol bot.`);
+                if (owners[args[1]]) {
+                    message.channel.send(`Cannot disallow ${args[1]} because they are an owner!`);
+                    break;
+                }
+
+                message.channel.send(`Made ${args[1]} disallowed from using kontrol bot.`);
                 allowedUsers[args[1]] = false;
             } else {
-                message.channel.send(`${args[1]} was already unable to use kontrol bot!`);
+                message.channel.send(`${args[1]} was already disallowed from kontrol bot!`);
             }
             break;
         default:
@@ -143,7 +149,7 @@ function checkAllowed(message) {
     if (!allowedUsers[message.author.tag] && !allowAll) {
         message.channel.send(
             `${message.author.tag} is not allowed to use kontrol bot! ` +
-                `Owners can allow using ${botCommandDelm} allow username#tag`
+                `Owners can allow by typing \`${botCommandDelm} allow ${message.author.tag}\``
         );
         return false;
     }

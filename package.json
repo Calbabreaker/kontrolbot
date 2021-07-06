@@ -5,7 +5,7 @@
     "license": "MIT",
     "scripts": {
         "start": "node index.js",
-        "start:docker": "docker run --env-file .env --rm -it",
+        "start:docker": "docker run --env-file .env -it",
         "build:docker": "docker build ."
     },
     "dependencies": {

@@ -1,4 +1,4 @@
-FROM node:12
+FROM nikolaik/python-nodejs:python3.9-nodejs12
 
 WORKDIR /app
 
