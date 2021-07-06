@@ -5,10 +5,11 @@
     "license": "MIT",
     "scripts": {
         "start": "node index.js",
-        "start:docker": "docker run --rm -it",
+        "start:docker": "docker run --env-file .env --rm -it",
         "build:docker": "docker build ."
     },
     "dependencies": {
-        "discord.js": "^12.5.3"
+        "discord.js": "^12.5.3",
+        "dotenv": "^10.0.0"
     }
 }

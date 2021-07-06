@@ -1,32 +1,47 @@
+const botCommandDelm = "!kb";
+const messageLimit = 2000;
+
+require("dotenv").config();
 const childProcess = require("child_process");
 const Discord = require("discord.js");
 const client = new Discord.Client();
 
-if (process.env.BOT_TOKEN) {
-    client.login(process.env.BOT_TOKEN);
-    process.env.BOT_TOKEN = "";
-} else {
-    client.login(process.argv[2]);
-    process.argv[2] = "";
-}
+// a dictionary with usernames and value boolean
+// if a user doesn't exist then it would be false
+let allowedUsers = {};
+let allowAll = false;
 
-const botCommandDeliminator = "!kontrolbot";
+// owners can make other users be allowed to run kontrolbot
+// owners can only be modified by modifying .env and restarting kontrolbot
+let owners = {};
+if (process.env.OWNERS) {
+    process.env.OWNERS.split(",").forEach((name) => {
+        owners[name] = true;
+        allowedUsers[name] = true;
+    });
+}
 
 client.on("ready", () => {
     console.log("Bot running!");
 });
 
-client.on("message", (messageObj) => {
-    const trimmedMessage = messageObj.content.trim();
+client.on("message", (message) => {
+    const trimmedMessage = message.content.trim();
     if (trimmedMessage[0] === ">") {
-        doShellCommand(messageObj.channel, trimmedMessage.slice(1, trimmedMessage.length));
-    } else if (trimmedMessage.startsWith(botCommandDeliminator)) {
-        doBotCommand(
-            messageObj.channel,
-            trimmedMessage.slice(botCommandDeliminator.length, trimmedMessage.length).trim()
-        );
+        if (!checkAllowed(message)) return;
+
+        doShellCommand(message.channel, trimmedMessage.slice(1, trimmedMessage.length));
+    } else if (trimmedMessage.startsWith(botCommandDelm)) {
+        if (!checkAllowed(message)) return;
+
+        const removedDelm = trimmedMessage
+            .slice(botCommandDelm.length, trimmedMessage.length)
+            .trim();
+        doBotCommand(message, removedDelm);
     }
 });
+
+client.login(process.env.BOT_TOKEN);
 
 let subProcess;
 let smbInterval;
@@ -34,8 +49,10 @@ let smbInterval;
 function doShellCommand(channel, shellCommand) {
     if (subProcess != null) {
         channel.send(
-            `Process \`${subProcess.command}\` is already running! Type !kontrolbot kill to kill it.`
+            `Process \`${subProcess.command}\` is already running! ` +
+                `Type ${botCommandDelm} kill to kill it.`
         );
+
         return;
     }
 
@@ -62,24 +79,92 @@ function doShellCommand(channel, shellCommand) {
 }
 
 // bot commands begin with !kontrolbot
-function doBotCommand(channel, botCommand) {
-    switch (botCommand) {
+function doBotCommand(message, botCommand) {
+    const args = botCommand.split(/ +/g);
+    switch (args[0]) {
         case "kill":
             if (subProcess != null) {
-                channel.send(`Killed \`${subProcess.command}\``);
+                message.channel.send(`Killed \`${subProcess.command}\``);
                 subProcess.kill();
                 clearMessageBuffer();
             } else {
-                channel.send(`No process is running!`);
+                message.channel.send(`No process is running!`);
+            }
+            break;
+        case "allow":
+            if (!checkOwner(message)) break;
+
+            if (!allowedUsers[args[1]]) {
+                if (args[1] == "*") {
+                    allowAll = true;
+                    message.channel.send(`Made everyone allowed to use kontrol bot.`);
+                    break;
+                }
+
+                message.channel.send(`Made ${args[1]} allowed to use kontrol bot.`);
+                allowedUsers[args[1]] = true;
+            } else {
+                message.channel.send(`${args[1]} was already able to use kontrol bot!`);
+            }
+            break;
+        case "disallow":
+            if (!checkOwner(message)) break;
+
+            if (args[1] == "*") {
+                message.channel.send(`Made everyone unable to use kontrol bot.`);
+                resetAllowedUsers();
+                break;
+            }
+
+            if (allowAll) {
+                message.channel.send(
+                    `Cannot disallow a person if everyone is allowed. Use * to disallow everyone first.`
+                );
+            }
+
+            if (allowedUsers[args[1]]) {
+                message.channel.send(`Made ${args[1]} unable to use kontrol bot.`);
+                allowedUsers[args[1]] = false;
+            } else {
+                message.channel.send(`${args[1]} was already unable to use kontrol bot!`);
             }
             break;
         default:
-            channel.send(`Invalid kontrol bot command: \`${botCommand}\``);
+            message.channel.send(`Invalid kontrol bot command: \`${botCommand}\``);
             break;
     }
 }
 
-const messageLimit = 2000;
+function checkAllowed(message) {
+    if (!allowedUsers[message.author.tag] && !allowAll) {
+        message.channel.send(
+            `${message.author.tag} is not allowed to use kontrol bot! ` +
+                `Owners can allow using ${botCommandDelm} allow username#tag`
+        );
+        return false;
+    }
+
+    return true;
+}
+
+function checkOwner(message) {
+    if (!owners[message.author.tag]) {
+        message.channel.send(
+            `${message.author.tag} is not an owner so they cannot allow or disallow other users from using kontrol bot!`
+        );
+        return false;
+    }
+
+    return true;
+}
+
+function resetAllowedUsers() {
+    allowAll = false;
+    Object.keys(owners).forEach((name) => {
+        allowedUsers[name] = true;
+    });
+}
+
 let messageBuffer = "";
 
 function queueMessage(message) {
@@ -99,7 +184,12 @@ function sendMessageBuffer(channel) {
         return;
     }
 
-    channel.send(messageToSend);
+    const sanitizedMessage = messageToSend.replace(
+        /[A-Za-z\d]{22,24}\.[\w-]{4,6}\.[\w-]{25,27}/g,
+        ""
+    );
+
+    channel.send(sanitizedMessage);
     messageBuffer = messageBuffer.slice(messageToSend.length - 1, messageBuffer.length);
 }
 
