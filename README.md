@@ -1,42 +1,42 @@
 # Kontrol Bot
 
-A discord bot that controls your computer through the shell.
-
-Works on Linux, MacOS, Windows, etc.
+A cross platform discord bot that allows you to control your computer through the command line.
 
 ## Setup
 
 #### Getting the bot 
 
-Go to the [applications control
+First go to the [applications control
 panel](https://discord.com/developers/applications), create an application,
 then make a bot, then create a .env file with `BOT_TOKEN=put bot token here` as
-its contents. Then go to Then go to
+its contents. Then go to
 `http://discord.com/oauth2/authorize?client_id=APP_ID&scope=bot` with APP_ID
-being the application id to add it to a server.
+being the application ID to add it to a server.
 
 #### Running it
 
-Make sure you have [nodejs](https://nodejs.org/) and
-[yarn](https://yarnpkg.com/) installed.  Get the source code and run `yarn
-install` at the root dir.
+First make sure you have [nodejs](https://nodejs.org/) and
+[yarn](https://yarnpkg.com/) installed. Then get the source code of this 
+repository (by doing `git clone https://github.com/Calbabreaker/kontrolbot/` 
+or downloading as a zip) and then run `yarn install` at the root directory 
+of the repository.
 
 Now you can run it directly on your computer by running `yarn start`.
 
-Or run it inside a docker container with `yarn start:docker -t
+You can also run it inside of a docker container by doing `yarn start:docker -t
 calbabreaker/kontrolbot`. You can also build a docker image with `yarn
 build:docker` and run the image with the same run command but with
 calbabreaker/kontrolbot replaced with the built image tag.
 
 ## Usage
 
-Type a message with `>` at the front and it will execute the message and echo
-back the result. Commands will continuously send back their output until the
-commmand finishes. You can use `!kb kill` to kill the current command.
+To send a command, type a message with `>` at the front and it will execute it and echo
+back the result while it executes it. You can use `!kb kill` to kill the current command
+although it might not respond if it's stuck in a loop.
 
-By default everyone can use kontrol bot but if you wan't to restrict usage,
-then first put `OWNERS=` in on seperate line and add your username#tag or
-anyone you trust as a comma seperated list to the left of the =.
+By default everyone can use kontrol bot but if you want to restrict usage,
+then add `OWNERS=` on seperate line in the .env file and add your username#tag 
+or anyone's username#tag as a comma seperated list to the left of the =.
 
 Example .env:
 
@@ -45,7 +45,7 @@ BOT_TOKEN=000000000000000.0000.00000000000000000
 OWNERS=User#1013,AmazingUser#2184
 ```
 
-Now only the specified OWNERS can use kontrol bot. If you want others to use it
-then type `!kb allow username#tag` to allow them. You can disallow them by
-doing `!kb disallow username#tag`. You can also allow or disallow everyone
-access by have the username#tag as `*`.
+Now only the specified OWNERS can use kontrol bot. OWNERS can also allow other
+people to use kontrol bot by sending `!kb allow username#tag` to allow them but 
+they cannot allow others. You can disallow them by doing `!kb disallow username#tag`. 
+You can also allow or disallow everyone access by have the username#tag be `*`.
