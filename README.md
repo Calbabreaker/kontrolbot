@@ -18,7 +18,7 @@ being the application ID to add it to a server.
 First make sure you have [nodejs](https://nodejs.org/) and
 [yarn](https://yarnpkg.com/) installed. Then get the source code of this 
 repository (by doing `git clone https://github.com/Calbabreaker/kontrolbot/` 
-or downloading as a zip) and then run `yarn install` at the root directory 
+or downloading as a zip) and then run `yarn` at the root directory 
 of the repository.
 
 Now you can run it directly on your computer by running `yarn start`.
@@ -30,13 +30,13 @@ calbabreaker/kontrolbot replaced with the built image tag.
 
 ## Usage
 
-To send a command, type a message with `>` at the front and it will execute it and echo
-back the result while it executes it. You can use `!kb kill` to kill the current command
+To send a command, send a message with `>` at the front and it will execute it while sending
+back the output. You can use `!kb kill` to kill the current command
 although it might not respond if it's stuck in a loop.
 
-By default everyone can use kontrol bot but if you want to restrict usage,
-then add `OWNERS=` on seperate line in the .env file and add your username#tag 
-or anyone's username#tag as a comma seperated list to the left of the =.
+By default everyone can use kontrolbot but if you want to restrict usage,
+ add `OWNERS=` on seperate line in the .env file and add your username#tag 
+or anyone's username#tag as a comma seperated list to the right of the =.
 
 Example .env:
 
@@ -46,6 +46,6 @@ OWNERS=User#1013,AmazingUser#2184
 ```
 
 Now only the specified OWNERS can use kontrol bot. OWNERS can also allow other
-people to use kontrol bot by sending `!kb allow username#tag` to allow them but 
+people to use kontrol bot by sending `!kb allow username#tag` but that person
 they cannot allow others. You can disallow them by doing `!kb disallow username#tag`. 
-You can also allow or disallow everyone access by have the username#tag be `*`.
+You can also allow or disallow everyone by having the username#tag be `*`.
