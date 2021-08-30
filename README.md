@@ -1,6 +1,7 @@
 # Kontrol Bot
 
-A cross platform discord bot that allows you to control your computer through the command line.
+A cross platform application that allows you to control your computer through 
+discord using shell commands.
 
 ## Setup
 
